@@ -12,6 +12,15 @@ export const Motivation: React.FC = () => {
       setIsLoading(true);
       setError(null);
       
+      // Prevent crash if API_KEY is not set in the environment
+      if (typeof process === 'undefined' || typeof process.env === 'undefined' || !process.env.API_KEY) {
+        console.warn("API_KEY not found. Using fallback motivation.");
+        setQuote("Believe you can and you're halfway there.");
+        setError("Motivation service is unavailable.");
+        setIsLoading(false);
+        return;
+      }
+
       const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
       const cacheKey = `motivation-${today}`;
 
@@ -19,6 +28,7 @@ export const Motivation: React.FC = () => {
         const cachedQuote = localStorage.getItem(cacheKey);
         if (cachedQuote) {
           setQuote(cachedQuote);
+          setIsLoading(false);
           return;
         }
 
@@ -64,14 +74,13 @@ export const Motivation: React.FC = () => {
       );
     }
     
-    if (error && !quote) {
-      return <p className="text-center text-red-500">{error}</p>
-    }
-
     return (
-        <blockquote className="relative p-4 text-center text-gray-600 border-l-4 border-lime-300 bg-lime-50 rounded-r-lg">
-            <p className="text-base italic">"{quote}"</p>
-        </blockquote>
+        <>
+            <blockquote className="relative p-4 text-center text-gray-600 border-l-4 border-lime-300 bg-lime-50 rounded-r-lg">
+                <p className="text-base italic">"{quote}"</p>
+            </blockquote>
+            {error && <p className="text-center text-red-500 text-xs mt-2">{error}</p>}
+        </>
     );
   };
 
